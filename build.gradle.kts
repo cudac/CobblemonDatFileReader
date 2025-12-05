@@ -12,16 +12,8 @@ repositories {
 }
 
 dependencies {
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
     val querz_nbt_version: String by project;
     shadow("com.github.Querz:NBT:$querz_nbt_version")
-}
-
-tasks.test {
-    useJUnitPlatform()
 }
 
 tasks.jar {

@@ -21,15 +21,6 @@ public class CobblemonDatFileReader {
             return;
         }
 
-//        try {
-//            NamedTag result = NBTUtil.read(new File("/home/cudac/dev/projects/testserver_cobblemon/world/pokemon/pcstore/af/afeae82b-295f-437f-9840-5efed9d7f36a.dat"));
-//            CompoundTag tag = (CompoundTag) result.getTag();
-//
-//            System.out.println(tag.toString());
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
         LOGGER.info("Finished initializing " + getFullName() + "...");
     }
 
