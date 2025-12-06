@@ -1,102 +1,119 @@
 package dev.cudac.cobblemondatfilereader.gui.frames;
 
-import dev.cudac.cobblemondatfilereader.gui.buttons.HomeButton;
-import dev.cudac.cobblemondatfilereader.gui.buttons.PokemonButton;
-import dev.cudac.cobblemondatfilereader.gui.buttons.PokemonStorageType;
-import dev.cudac.cobblemondatfilereader.pokemon.objects.Pokemon;
+import dev.cudac.cobblemondatfilereader.gui.buttons.pokemon.*;
+import dev.cudac.cobblemondatfilereader.pokemon.PokemonManager;
+import dev.cudac.cobblemondatfilereader.pokemon.objects.StoredPokemon;
+import dev.cudac.cobblemondatfilereader.utils.ImageUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Comparator;
 import java.util.List;
 
 public class PokemonPanel extends JPanel {
 
-    private static final int WIDTH = 900;
-    private static final int HEIGHT = 900;
+    private static final int WIDTH = 600;
+    private static final int HEIGHT = 600;
 
     private final JPanel gridPanel;
-    private final JButton prevButton;
-    private final JButton nextButton;
+    private final JLabel headerLabel;
 
-    private final PokemonStorageType type;
-    private final List<Pokemon> pokemon;
+    private final PokemonStorageType storage;
+    private final List<StoredPokemon> pokemon;
     private int currentPage = 0;
 
-    public PokemonPanel(PokemonStorageType type, List<Pokemon> pokemon) {
-        this.type = type;
+    public PokemonPanel(PokemonStorageType storage, List<StoredPokemon> pokemon) {
+        this.storage = storage;
         this.pokemon = pokemon;
 
         this.setLayout(new BorderLayout());
+        this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
 
-        String headerText = type == PokemonStorageType.PARTY ? "Party" : "Box " + currentPage;
-        JLabel header = new JLabel(headerText);
-        header.setFont(new Font("SansSerif", Font.BOLD, 16));
-        header.setHorizontalAlignment(SwingConstants.CENTER);
-        header.setAlignmentX(Component.CENTER_ALIGNMENT);
-        header.setAlignmentY(Component.CENTER_ALIGNMENT);
-        this.add(header, BorderLayout.NORTH);
+        String headerText = storage == PokemonStorageType.PARTY ? "Party" : "Box " + currentPage;
+        this.headerLabel = new JLabel(headerText);
+        headerLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+        headerLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        headerLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        headerLabel.setAlignmentY(Component.CENTER_ALIGNMENT);
+        this.add(headerLabel, BorderLayout.NORTH);
 
-        this.gridPanel = new JPanel(new GridLayout(type.getRows(), type.getCols(), type.getGap(), type.getGap()));
+        this.gridPanel = new JPanel(new GridLayout(storage.rows(), storage.columns(), storage.gap(), storage.gap()));
         this.add(gridPanel, BorderLayout.CENTER);
 
         JPanel navPanel = new JPanel(new FlowLayout());
 
-        this.prevButton = new JButton("Previous");
-        prevButton.addActionListener(e -> {
-            if (currentPage > 0) {
-                currentPage--;
-                updateGrid();
-            }
-        });
-
-        this.nextButton = new JButton("Next");
-        nextButton.addActionListener(e -> {
-            if ((currentPage * getMaxPokesPerPage()) < pokemon.size()) {
-                currentPage++;
-                updateGrid();
-            }
-        });
-
-        navPanel.add(prevButton);
+        navPanel.add(new PreviousButton(storage));
         navPanel.add(new HomeButton());
-        navPanel.add(nextButton);
+        navPanel.add(new NextButton(storage));
 
         this.add(navPanel, BorderLayout.SOUTH);
-        this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
-
-//        if (this.getParent() instanceof JFrame frame) {
-//            Dimension dimension = new Dimension(WIDTH, HEIGHT);
-//            frame.setSize(dimension);
-//            frame.setPreferredSize(dimension);
-//            frame.setResizable(true);
-//            frame.setLocationRelativeTo(null);
-//        }
 
         updateGrid();
         this.setVisible(true);
     }
 
-    private void updateGrid() {
+    public void updateGrid() {
         gridPanel.removeAll();
 
-        int maxPokesPerPage = getMaxPokesPerPage();
-        int start = currentPage * maxPokesPerPage;
-        int end = Math.min(start + maxPokesPerPage, pokemon.size());
+        if (storage == PokemonStorageType.PARTY) {
+            List<StoredPokemon> partyPokemon = pokemon.stream()
+                .filter(p -> p.storage() == PokemonStorageType.PARTY)
+                .sorted(Comparator.comparingInt(StoredPokemon::slot))
+                .toList();
 
-        for (int i = start; i < end; i++) {
-            gridPanel.add(new PokemonButton(pokemon.get(i)));
+            for (int partySlot = 0; partySlot < 6; partySlot++) {
+                if (partySlot >= partyPokemon.size()) {
+                    gridPanel.add(new EmptySlotButton()); // empty slots for formatting
+                    continue;
+                }
+
+                StoredPokemon storedPokemon = partyPokemon.get(partySlot);
+
+                if (storedPokemon == null) {
+                    gridPanel.add(new EmptySlotButton()); // empty slots for formatting
+                    continue;
+                }
+
+                gridPanel.add(new PokemonButton(storedPokemon.pokemon()), storedPokemon.slot());
+            }
+
+            return;
         }
 
-        for (int i = end - start; i < maxPokesPerPage; i++) {
-            gridPanel.add(new JLabel()); // empty slots for formatting
-        }
+        List<StoredPokemon> boxPokemon = pokemon.stream()
+            .filter(p -> p.storage() == PokemonStorageType.PC)
+            .filter(p -> p.boxNumber() == currentPage)
+            .sorted(Comparator.comparingInt(StoredPokemon::slot))
+            .toList();
 
-        prevButton.setEnabled(currentPage > 0);
-        nextButton.setEnabled(end < pokemon.size());
+        final int MAX_BOX_SLOT = 30; // 5x5 total pokes in box page
+        for (int boxSlot = 0; boxSlot < MAX_BOX_SLOT; boxSlot++) {
+            if (boxSlot >= boxPokemon.size()) {
+                gridPanel.add(new EmptySlotButton()); // empty slots for formatting
+                continue;
+            }
+
+            StoredPokemon storedPokemon = boxPokemon.get(boxSlot);
+
+            if (storedPokemon == null) {
+                gridPanel.add(new EmptySlotButton()); // empty slots for formatting
+                continue;
+            }
+
+            gridPanel.add(new PokemonButton(storedPokemon.pokemon()));
+        }
     }
 
-    private int getMaxPokesPerPage() {
-        return type.getRows() * type.getCols();
+    public JLabel getHeaderLabel() {
+        return headerLabel;
+    }
+
+    public int getCurrentPage() {
+        return currentPage;
+    }
+
+    public void setCurrentPage(int currentPage) {
+        this.currentPage = currentPage;
     }
 
 }

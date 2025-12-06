@@ -1,7 +1,7 @@
 package dev.cudac.cobblemondatfilereader.gui;
 
 import dev.cudac.cobblemondatfilereader.CobblemonDatFileReader;
-import dev.cudac.cobblemondatfilereader.gui.buttons.PokemonStorageType;
+import dev.cudac.cobblemondatfilereader.gui.buttons.pokemon.PokemonStorageType;
 import dev.cudac.cobblemondatfilereader.gui.frames.MainPanel;
 
 import javax.swing.*;
@@ -20,47 +20,49 @@ public class WindowManager {
     private WindowManager() {
         this.activeWindow = new JFrame();
 
-        final String TITLE = CobblemonDatFileReader.getFullName();
+        final String TITLE = CobblemonDatFileReader.projectName();
         activeWindow.setTitle(TITLE);
 
-        activeWindow.setSize(300, 300);
+//        activeWindow.setSize(300, 300);
 //        activeWindow.setExtendedState(JFrame.MAXIMIZED_BOTH);
         activeWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        activeWindow.setLocationRelativeTo(null);
-        activeWindow.setResizable(false);
 
         MainPanel mainPanel = new MainPanel();
         activeWindow.setContentPane(mainPanel);
-
         activeWindow.pack();
+
+        activeWindow.setLocationRelativeTo(null);
+        activeWindow.setResizable(false);
         activeWindow.setVisible(true);
     }
 
     public static void init() {
-        getInstance();
+        instance();
     }
 
     public void swapPanel(JPanel panel) {
-        getActiveWindow().ifPresent(window -> {
+        activeWindow().ifPresent(window -> {
             window.setContentPane(panel);
             window.revalidate();
             window.repaint();
+            window.pack();
+            window.setLocationRelativeTo(null);
         });
     }
 
-    public Optional<JFrame> getActiveWindow() {
+    public Optional<JFrame> activeWindow() {
         return Optional.ofNullable(activeWindow);
     }
 
     public void setSelectedFile(File selectedFile) {
         this.selectedFile = selectedFile;
-        getActiveWindow().ifPresent(window -> {
+        activeWindow().ifPresent(window -> {
             window.revalidate();
             window.repaint();
         });
     }
 
-    public Optional<File> getSelectedFile() {
+    public Optional<File> selectedFile() {
         return Optional.ofNullable(selectedFile);
     }
 
@@ -68,11 +70,11 @@ public class WindowManager {
         this.storageType = storageType;
     }
 
-    public Optional<PokemonStorageType> getStorageType() {
+    public Optional<PokemonStorageType> storageType() {
         return Optional.ofNullable(storageType);
     }
 
-    public static WindowManager getInstance() {
+    public static WindowManager instance() {
         if (instance == null) {
             instance = new WindowManager();
         }

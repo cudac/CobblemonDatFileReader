@@ -1,7 +1,8 @@
 package dev.cudac.cobblemondatfilereader.gui.frames;
 
 import dev.cudac.cobblemondatfilereader.CobblemonDatFileReader;
-import dev.cudac.cobblemondatfilereader.gui.buttons.*;
+import dev.cudac.cobblemondatfilereader.gui.buttons.main.*;
+import dev.cudac.cobblemondatfilereader.gui.buttons.pokemon.PokemonStorageType;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,40 +12,41 @@ public class MainPanel extends JPanel {
     private static final int WIDTH = 300;
     private static final int HEIGHT = 300;
 
-    private final JPanel mainPanel;
     private final JButton fileSelectionButton;
+
     private final JCheckBox partySelectionBox;
     private final JCheckBox pcSelectionBox;
 
-    public MainPanel() {
-        this.mainPanel = new JPanel();
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-        this.add(mainPanel);
+    private final JPanel boxNumberPanel;
 
-        JLabel titleText = new JLabel(CobblemonDatFileReader.getImplementationTitle(), SwingConstants.CENTER);
+    public MainPanel() {
+        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
+
+        JLabel titleText = new JLabel(CobblemonDatFileReader.implementationTitle(), SwingConstants.CENTER);
         titleText.setFont(new Font("SansSerif", Font.BOLD, 20));
         titleText.setAlignmentX(Component.CENTER_ALIGNMENT);
         titleText.setAlignmentY(Component.CENTER_ALIGNMENT);
 
-        mainPanel.add(Box.createVerticalStrut(15));
-        mainPanel.add(titleText);
+        this.add(Box.createVerticalStrut(15));
+        this.add(titleText);
 
-        JLabel versionText = new JLabel(CobblemonDatFileReader.getImplementationVersion(), SwingConstants.CENTER);
+        JLabel versionText = new JLabel(CobblemonDatFileReader.implementationVersion(), SwingConstants.CENTER);
         versionText.setFont(new Font("SansSerif", Font.BOLD, 16));
         versionText.setAlignmentX(Component.CENTER_ALIGNMENT);
         versionText.setAlignmentY(Component.CENTER_ALIGNMENT);
 
-        mainPanel.add(versionText);
-        mainPanel.add(Box.createVerticalStrut(20));
+        this.add(versionText);
+        this.add(Box.createVerticalStrut(20));
 
         JLabel chosenFileLabel = new JLabel("No file selected");
         chosenFileLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         chosenFileLabel.setAlignmentY(Component.CENTER_ALIGNMENT);
 
         this.fileSelectionButton = new FileSelectionButton(chosenFileLabel);
-        mainPanel.add(fileSelectionButton);
-        mainPanel.add(Box.createVerticalStrut(10));
-        mainPanel.add(chosenFileLabel);
+        this.add(fileSelectionButton);
+        this.add(Box.createVerticalStrut(10));
+        this.add(chosenFileLabel);
 
         this.partySelectionBox = new SourceSelectionButton(PokemonStorageType.PARTY);
         this.pcSelectionBox = new SourceSelectionButton(PokemonStorageType.PC);
@@ -56,39 +58,42 @@ public class MainPanel extends JPanel {
         JPanel checkBoxPanel = new JPanel();
         checkBoxPanel.add(partySelectionBox);
         checkBoxPanel.add(pcSelectionBox);
+        this.add(checkBoxPanel);
 
-        mainPanel.add(checkBoxPanel);
-        mainPanel.add(Box.createVerticalStrut(20));
+        this.boxNumberPanel = new JPanel();
+        boxNumberPanel.setVisible(false);
 
-        JButton readButton = new ReadButton();
-        mainPanel.add(readButton);
-        mainPanel.add(Box.createVerticalGlue());
+        JLabel boxNumberLabel = new JLabel("Select # of boxes:");
+        boxNumberPanel.add(boxNumberLabel);
 
-        mainPanel.add(Box.createVerticalStrut(10));
-        mainPanel.add(new CreditsButton());
+        JSpinner boxNumberSpinner = new BoxNumberSpinner();
+        boxNumberPanel.add(boxNumberSpinner);
 
-        this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
+        this.add(boxNumberPanel);
+        this.add(Box.createVerticalStrut(5));
 
-//        if (this.getParent() instanceof JFrame frame) {
-//            Dimension dimension = new Dimension(WIDTH, HEIGHT);
-//            frame.setSize(dimension);
-//            frame.setPreferredSize(dimension);
-//            frame.setResizable(false);
-//            frame.setLocationRelativeTo(null);
-//        }
+        this.add(new ReadButton());
+        this.add(Box.createVerticalStrut(10));
+
+        this.add(new CreditsButton());
+        this.add(Box.createVerticalGlue());
 
         this.setVisible(true);
     }
 
-    public JButton getFileSelectionButton() {
+    public JButton fileSelectionButton() {
         return fileSelectionButton;
     }
 
-    public JCheckBox getPartySelectionBox() {
+    public JPanel boxNumberPanel() {
+        return boxNumberPanel;
+    }
+
+    public JCheckBox partySelectionBox() {
         return partySelectionBox;
     }
 
-    public JCheckBox getPcSelectionBox() {
+    public JCheckBox pcSelectionBox() {
         return pcSelectionBox;
     }
 
